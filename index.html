@@ -3,9 +3,234 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>Be My Valentine?</title>
+    
+    <!-- Tailwind CSS for Styling -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: 'Great Vibes' for romantic headers, 'Poppins' for body -->
+    <link href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Canvas Confetti Library -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            background-color: #ffe4e6; /* Soft Pastel Pink */
+            overflow: hidden; /* Prevent scrollbars when button moves */
+        }
+        
+        h1 {
+            font-family: 'Great Vibes', cursive;
+        }
+
+        /* Smooth transition for fading elements in/out */
+        .fade-in {
+            animation: fadeIn 1s ease-in forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* The 'No' button needs absolute positioning to move freely */
+        #no-btn {
+            position: absolute; 
+            transition: all 0.1s ease; /* Fast movement */
+        }
+
+        /* Initial static position for buttons to sit side-by-side */
+        .buttons-container {
+            position: relative;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            align-items: center;
+            height: 100px; /* Define height to contain buttons initially */
+        }
+    </style>
 </head>
-<body>
-    <h1>Hello World</h1>
+<body class="h-screen w-screen flex flex-col items-center justify-center text-center selection:bg-rose-300">
+
+    <!-- PAGE 1: The Question -->
+    <div id="page-ask" class="flex flex-col items-center gap-8 px-4 w-full max-w-lg">
+        
+        <!-- Cute Decorative Icon -->
+        <div class="text-6xl animate-bounce">
+            💌
+        </div>
+
+        <!-- The Question -->
+        <h1 class="text-6xl md:text-7xl text-rose-600 drop-shadow-sm p-4">
+            Will you be my Valentine?
+        </h1>
+
+        <p class="text-rose-800 text-lg opacity-80 max-w-md">
+            I've been waiting for the right moment to ask...
+        </p>
+
+        <!-- Buttons Area -->
+        <div class="buttons-container w-full">
+            
+            <!-- YES Button -->
+            <button id="yes-btn" class="z-50 px-8 py-4 bg-rose-500 hover:bg-rose-600 text-white font-bold rounded-full shadow-lg transform hover:scale-110 transition-all duration-300 text-xl border-4 border-rose-200">
+                Yes! ❤️
+            </button>
+
+            <!-- NO Button (Initially relative, becomes absolute on hover) -->
+            <button id="no-btn" class="z-40 px-8 py-4 bg-white text-rose-500 font-bold rounded-full shadow-md hover:bg-gray-100 text-xl border-2 border-rose-100" style="position: relative;">
+                No
+            </button>
+
+        </div>
+    </div>
+
+    <!-- PAGE 2: The Celebration (Hidden by default) -->
+    <div id="page-success" class="hidden flex-col items-center justify-center gap-6 w-full h-full absolute inset-0 bg-rose-50 z-50 fade-in">
+        
+        <!-- Celebration GIF -->
+        <div class="relative">
+            <!-- Using a cute bear hug GIF -->
+            <img src="https://media.giphy.com/media/26BRv0ThflsHCqDrG/giphy.gif" 
+                 alt="Romantic Hug" 
+                 class="rounded-3xl shadow-2xl border-8 border-white w-72 md:w-96">
+            
+            <!-- Floating hearts -->
+            <div class="absolute -top-10 -right-10 text-6xl animate-pulse">💖</div>
+            <div class="absolute -bottom-10 -left-10 text-6xl animate-pulse delay-75">🥰</div>
+        </div>
+
+        <h1 class="text-5xl md:text-7xl text-rose-600 mt-8 p-4">
+            Fantastic Choice!
+        </h1>
+        
+        <p class="text-xl text-rose-800 font-medium">
+            See you on February 14th! xoxo
+        </p>
+
+        <button onclick="location.reload()" class="mt-8 text-rose-400 hover:text-rose-600 underline text-sm">
+            Replay
+        </button>
+    </div>
+
+    <!-- JAVASCRIPT LOGIC -->
+    <script>
+        const noBtn = document.getElementById('no-btn');
+        const yesBtn = document.getElementById('yes-btn');
+        const pageAsk = document.getElementById('page-ask');
+        const pageSuccess = document.getElementById('page-success');
+
+        // --- "NO" BUTTON LOGIC ---
+
+        function moveButton() {
+            // Get viewport dimensions
+            const containerWidth = window.innerWidth;
+            const containerHeight = window.innerHeight;
+            
+            // Get button dimensions
+            const btnWidth = noBtn.offsetWidth;
+            const btnHeight = noBtn.offsetHeight;
+
+            // Get "Yes" button rect to avoid overlap
+            const yesRect = yesBtn.getBoundingClientRect();
+
+            let newX, newY;
+            let safe = false;
+            
+            // Padding to ensure button doesn't touch the very edge of the screen
+            const edgePadding = 20;
+
+            // Try to find a spot that doesn't overlap with the YES button
+            // We give up after 50 tries to prevent freezing (edge case)
+            for(let i = 0; i < 50; i++) {
+                // Random position within the viewport (minus button size and padding)
+                newX = Math.random() * (containerWidth - btnWidth - (edgePadding * 2)) + edgePadding;
+                newY = Math.random() * (containerHeight - btnHeight - (edgePadding * 2)) + edgePadding;
+
+                // Check collision with YES button (adding a 50px buffer zone)
+                if (
+                    newX < yesRect.right + 50 &&
+                    newX + btnWidth > yesRect.left - 50 &&
+                    newY < yesRect.bottom + 50 &&
+                    newY + btnHeight > yesRect.top - 50
+                ) {
+                    // Overlap detected, try again
+                    continue;
+                } else {
+                    safe = true;
+                    break;
+                }
+            }
+
+            // Apply new position
+            // CRITICAL FIX: Use 'fixed' positioning so coordinates are relative to the viewport window, 
+            // not the parent container. This prevents the button from flying off-screen.
+            noBtn.style.position = 'fixed';
+            noBtn.style.left = `${newX}px`;
+            noBtn.style.top = `${newY}px`;
+        }
+
+        // Trigger move on Mouseover (Desktop)
+        noBtn.addEventListener('mouseover', moveButton);
+        
+        // Trigger move on Click/Tap (Mobile fallback)
+        // This ensures if they somehow manage to tap it, it still jumps away
+        noBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            moveButton();
+        });
+
+
+        // --- "YES" BUTTON LOGIC ---
+
+        yesBtn.addEventListener('click', () => {
+            // 1. Hide Question Page
+            pageAsk.classList.add('hidden');
+            
+            // 2. Show Success Page
+            pageSuccess.classList.remove('hidden');
+            pageSuccess.classList.add('flex');
+
+            // 3. Trigger Confetti
+            launchConfetti();
+        });
+
+
+        // --- CONFETTI EFFECT ---
+        
+        function launchConfetti() {
+            var duration = 3 * 1000;
+            var animationEnd = Date.now() + duration;
+            var defaults = { startVelocity: 30, spread: 360, ticks: 60, zIndex: 0 };
+
+            function randomInRange(min, max) {
+                return Math.random() * (max - min) + min;
+            }
+
+            var interval = setInterval(function() {
+                var timeLeft = animationEnd - Date.now();
+
+                if (timeLeft <= 0) {
+                    return clearInterval(interval);
+                }
+
+                var particleCount = 50 * (timeLeft / duration);
+                
+                // create two confetti sources (left and right corners)
+                confetti(Object.assign({}, defaults, { 
+                    particleCount, 
+                    origin: { x: randomInRange(0.1, 0.3), y: Math.random() - 0.2 },
+                    colors: ['#ff0000', '#ffa500', '#ffff00', '#008000', '#0000ff', '#4b0082', '#ee82ee']
+                }));
+                confetti(Object.assign({}, defaults, { 
+                    particleCount, 
+                    origin: { x: randomInRange(0.7, 0.9), y: Math.random() - 0.2 },
+                    colors: ['#ffc0cb', '#ff69b4', '#ff1493', '#db7093'] // Pinks
+                }));
+            }, 250);
+        }
+    </script>
 </body>
 </html>
